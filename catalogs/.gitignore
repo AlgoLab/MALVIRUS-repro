@@ -1,0 +1,5 @@
+.snakemake/
+input/
+seqs/
+vcf/
+software/fill_msa
