@@ -1,0 +1,55 @@
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##bcftoolsVersion=1.10.2+htslib-1.10.2
+##bcftoolsCommand=mpileup -Ou -d 10000 -f /home/denti/data/bmc_exp_from_scc/NC_045512.2.fa /home/denti/data/OUT/alns/ERR5041219.q30.bam
+##reference=file:///home/denti/data/bmc_exp_from_scc/NC_045512.2.fa
+##contig=<ID=NC_045512.2,length=29903>
+##ALT=<ID=*,Description="Represents allele(s) other than observed.">
+##INFO=<ID=INDEL,Number=0,Type=Flag,Description="Indicates that the variant is an INDEL.">
+##INFO=<ID=IDV,Number=1,Type=Integer,Description="Maximum number of raw reads supporting an indel">
+##INFO=<ID=IMF,Number=1,Type=Float,Description="Maximum fraction of raw reads supporting an indel">
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw read depth">
+##INFO=<ID=VDB,Number=1,Type=Float,Description="Variant Distance Bias for filtering splice-site artefacts in RNA-seq data (bigger is better)",Version="3">
+##INFO=<ID=RPB,Number=1,Type=Float,Description="Mann-Whitney U test of Read Position Bias (bigger is better)">
+##INFO=<ID=MQB,Number=1,Type=Float,Description="Mann-Whitney U test of Mapping Quality Bias (bigger is better)">
+##INFO=<ID=BQB,Number=1,Type=Float,Description="Mann-Whitney U test of Base Quality Bias (bigger is better)">
+##INFO=<ID=MQSB,Number=1,Type=Float,Description="Mann-Whitney U test of Mapping Quality vs Strand Bias (bigger is better)">
+##INFO=<ID=SGB,Number=1,Type=Float,Description="Segregation based metric.">
+##INFO=<ID=MQ0F,Number=1,Type=Float,Description="Fraction of MQ0 reads (smaller is better)">
+##FORMAT=<ID=PL,Number=G,Type=Integer,Description="List of Phred-scaled genotype likelihoods">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Phred-scaled Genotype Quality">
+##INFO=<ID=ICB,Number=1,Type=Float,Description="Inbreeding Coefficient Binomial test (bigger is better)">
+##INFO=<ID=HOB,Number=1,Type=Float,Description="Bias in the number of HOMs number (smaller is better)">
+##INFO=<ID=AC,Number=A,Type=Integer,Description="Allele count in genotypes for each ALT allele, in the same order as listed">
+##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes">
+##INFO=<ID=DP4,Number=4,Type=Integer,Description="Number of high-quality ref-forward , ref-reverse, alt-forward and alt-reverse bases">
+##INFO=<ID=MQ,Number=1,Type=Integer,Description="Average mapping quality">
+##bcftools_callVersion=1.10.2+htslib-1.10.2
+##bcftools_callCommand=call --ploidy 1 -f GQ -mv -Ov; Date=Sat Apr 10 08:02:51 2021
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	/home/denti/data/OUT/alns/ERR5041219.q30.bam
+NC_045512.2	174	.	G	T	228	.	DP=9125;VDB=0;SGB=-0.693147;RPB=0.19454;MQB=1;BQB=0.0388203;MQ0F=0;AC=1;AN=1;DP4=3,0,8307,0;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	241	.	C	T	228	.	DP=9946;VDB=9.30154e-28;SGB=-0.693147;RPB=1;MQB=1;MQSB=0.99834;BQB=1;MQ0F=0;AC=1;AN=1;DP4=1,0,8866,826;MQ=59	GT:PL:GQ	1:255,0:127
+NC_045512.2	605	.	A	G	225	.	DP=1431;VDB=0;SGB=-0.693147;MQSB=0.999988;MQ0F=0;AC=1;AN=1;DP4=0,0,14,1324;MQ=59	GT:PL:GQ	1:255,0:127
+NC_045512.2	1059	.	C	T	228	.	DP=7949;VDB=0;SGB=-0.693147;RPB=0.99203;MQB=1;BQB=0.941766;MQ0F=0;AC=1;AN=1;DP4=2,0,7779,0;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	2692	.	A	T	225	.	DP=3584;VDB=0;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,3541,1;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	3037	.	C	T	228	.	DP=9996;VDB=1;SGB=-0.693147;RPB=1;MQB=1;MQSB=0.999801;BQB=1;MQ0F=0;AC=1;AN=1;DP4=0,1,1977,6794;MQ=59	GT:PL:GQ	1:255,0:127
+NC_045512.2	4459	.	A	G	225	.	DP=470;VDB=0;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,450,6;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	5230	.	G	T	228	.	DP=8422;VDB=0;SGB=-0.693147;RPB=0.822722;MQB=0.999986;MQSB=0.998629;BQB=0.0221924;MQ0F=0;AC=1;AN=1;DP4=0,5,2,8016;MQ=59	GT:PL:GQ	1:255,0:127
+NC_045512.2	10323	.	A	G	225	.	DP=10042;VDB=0;SGB=-0.693147;MQ0F=0;AC=1;AN=1;DP4=0,0,0,9871;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	14408	.	C	T	228	.	DP=9970;VDB=0;SGB=-0.693147;RPB=0.998746;MQB=1;MQSB=1;BQB=0.923841;MQ0F=0;AC=1;AN=1;DP4=0,3,5,8736;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	21614	.	C	T	228	.	DP=8486;VDB=0;SGB=-0.693147;RPB=1;MQB=1;MQSB=1;BQB=1;MQ0F=0;AC=1;AN=1;DP4=0,1,103,8076;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	21801	.	A	C	225	.	DP=1469;VDB=0;SGB=-0.693147;MQ0F=0;AC=1;AN=1;DP4=0,0,1453,0;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	22206	.	A	G	225	.	DP=8863;VDB=0;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,8,8587;MQ=59	GT:PL:GQ	1:255,0:127
+NC_045512.2	23012	.	G	A	225	.	DP=3398;VDB=0;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,1731,3;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	23063	.	A	T	225	.	DP=1845;VDB=0;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,2,1728;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	23403	.	A	G	225	.	DP=2418;VDB=0;SGB=-0.693147;MQSB=0.996833;MQ0F=0;AC=1;AN=1;DP4=0,0,2,2210;MQ=59	GT:PL:GQ	1:255,0:127
+NC_045512.2	23564	.	G	T	225	.	DP=7306;VDB=0;SGB=-0.693147;MQ0F=0;AC=1;AN=1;DP4=0,0,7225,0;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	23664	.	C	T	228	.	DP=9702;VDB=0;SGB=-0.693147;RPB=1;MQB=1;MQSB=1;BQB=1;MQ0F=0;AC=1;AN=1;DP4=1,0,27,2549;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	25429	.	G	T	228	.	DP=5362;VDB=0;SGB=-0.693147;RPB=0.94592;MQB=1;MQSB=1;BQB=0.0683218;MQ0F=0;AC=1;AN=1;DP4=2,0,5194,2;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	25563	.	G	T	228	.	DP=5396;VDB=0;SGB=-0.693147;RPB=0.00159151;MQB=0.999967;MQSB=0.999341;BQB=0.00369434;MQ0F=0;AC=1;AN=1;DP4=0,15,283,4660;MQ=59	GT:PL:GQ	1:255,0:127
+NC_045512.2	26008	.	T	C	225	.	DP=5028;VDB=0;SGB=-0.693147;MQ0F=0;AC=1;AN=1;DP4=0,0,4996,0;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	26456	.	C	T	228	.	DP=7786;VDB=0;SGB=-0.693147;RPB=1;MQB=1;MQSB=0.999736;BQB=1;MQ0F=0;AC=1;AN=1;DP4=0,1,2,7585;MQ=59	GT:PL:GQ	1:255,0:127
+NC_045512.2	26645	.	C	T	225	.	DP=1831;VDB=0;SGB=-0.693147;MQSB=0.957696;MQ0F=0;AC=1;AN=1;DP4=0,0,1695,34;MQ=59	GT:PL:GQ	1:255,0:127
+NC_045512.2	28253	.	C	T	228	.	DP=7465;VDB=0;SGB=-0.693147;RPB=1;MQB=1;MQSB=1;BQB=1;MQ0F=0;AC=1;AN=1;DP4=1,0,7375,4;MQ=60	GT:PL:GQ	1:255,0:127
+NC_045512.2	28887	.	C	T	225	.	DP=10000;VDB=1;SGB=-0.693147;MQSB=0.999934;MQ0F=0;AC=1;AN=1;DP4=0,0,6565,2686;MQ=59	GT:PL:GQ	1:255,0:127

@@ -1,0 +1,346 @@
+import os.path
+
+gen_size = 31000 # covid genome length
+
+basepath = config['basepath'] if 'basepath' in config else "."
+swpath = os.path.join(basepath, "software")
+
+ref = os.path.join(basepath, "refs/NC_045512.2/reference.fasta")
+varcatalog = os.path.join(basepath, "vcf", config['vcfname'], "catalog.vcf")
+
+gisaiddir = os.path.join(basepath, "input/gisaid")
+fqdir = os.path.join(basepath, "input/samples")
+
+middir = os.path.join(basepath, "mid")
+kmcdir = os.path.join(middir, "kmc")
+alndir = os.path.join(middir, "alns")
+gisaidalndir = os.path.join(middir, "gisaid")
+
+othdir = os.path.join(basepath, "others")
+truthdir = os.path.join(basepath, "truth")
+
+
+odir = ""
+K = [31]
+
+samples = {}
+for line in open(os.path.join(fqdir, "samples.tsv")):
+    sname, stype, cov, gisaidid = line.strip('\n').split('\t')
+    samples[sname] = (gisaidid, int(cov), stype)
+
+rule run_all_summary:
+    input:
+        expand(os.path.join(odir, "summary.k{K}.csv"),
+               K = K),
+
+rule run_summary:
+    input:
+        expand(os.path.join(odir, "{sample}", "summary.k{{K}}.csv"),
+               sample = samples),
+    output:
+        os.path.join(odir, "summary.k{K}.csv"),
+    shell:
+        """
+        csvstack {input} > {output}
+        """
+
+rule run_tools:
+    input:
+        expand(os.path.join(odir, "{sample}", "kmc_k{K}", "malva.csv"),
+               sample = samples, K = K),
+        expand(os.path.join(odir, "{sample}", "kmc_k{K}", "malva.lineage.csv"),
+               sample = samples, K = K),
+        expand(os.path.join(odir, "{sample}", "lofreq.csv"),
+               sample = samples),
+
+
+### EXTRACT TRUTH FROM GISAID MASKED MSA ###
+rule index_fa:
+    input:
+        "{fpre}.fa"
+    output:
+        "{fpre}.fa.fai"
+    shell:
+        """
+        samtools faidx {input}
+        """
+
+rule align_gisaid_seq:
+    input:
+        fa = ref,
+        gisaid_seq = os.path.join(gisaiddir, "{gisaid_id}.fasta"),
+    output:
+        os.path.join(gisaidalndir, "{gisaid_id}.fasta"),
+    log:
+        out = os.path.join(gisaidalndir, "{gisaid_id}.log"),
+    shell:
+        """
+        mafft --6merpair --addfragments {input.gisaid_seq} {input.fa} > {output} 2> {log.out}
+        """
+
+rule extract_truth:
+    input:
+        fa = ref,
+        gisaid_aln = lambda wildcards: os.path.join(gisaidalndir, samples[wildcards.sample][0] + ".fasta"),
+        msa2vcf = os.path.join(swpath, 'msa2vcf.py'),
+    output:
+        os.path.join(truthdir, "{sample}", "truth.vcf")
+    log:
+        out = os.path.join(truthdir, "{sample}", "msa2vcf.log"),
+    shadow: "minimal"
+    shell:
+        """
+        {input.msa2vcf} {input.fa} {input.gisaid_aln} ./ &> {log.out}
+        mv sample.vcf {output}
+        """
+
+### MALVA RULES ###
+rule kmc:
+    input:
+        sample = os.path.join(fqdir, "{sample}.fastq.gz")
+    output:
+        os.path.join(kmcdir, "{sample}", "kmc_k{k}", "kmc.kmc_pre")
+    params:
+        ci = lambda wildcards: int(samples[wildcards.sample][1]*1000000/gen_size/100),
+        cs = 50000,
+        kmc_prefix = os.path.join(kmcdir, "{sample}", "kmc_k{k}", "kmc"),
+        kmc_tmp = os.path.join(kmcdir, "{sample}", "kmc_k{k}", "kmc_kmc_tmp")
+    threads: 4
+    log:
+        out = os.path.join(kmcdir, "{sample}", "kmc_k{k}", "kmc.log"),
+        time = os.path.join(kmcdir, "{sample}", "kmc_k{k}", "kmc.time")
+    shell:
+        """
+        mkdir -p {params.kmc_tmp}
+        /usr/bin/time -vo {log.time} kmc -t{threads} -m4 -k{wildcards.k} -ci{params.ci} -cs{params.cs} -fq {input.sample} {params.kmc_prefix} {params.kmc_tmp} &> {log.out}
+        rm -r {params.kmc_tmp}
+        """
+
+rule malva:
+    input:
+        fa = ref,
+        vcf = varcatalog,
+        kmc = os.path.join(kmcdir, "{sample}", "kmc_k{K}", "kmc.kmc_pre"),
+        malvageno = os.path.join(swpath, "malva/malva-geno"),
+    output:
+        vcf = os.path.join(odir, "{sample}", "kmc_k{K}", "malva.vcf")
+    params:
+        k = lambda wildcards: int(wildcards.K),
+        cs = 50000,
+        kmc_prefix = os.path.join(kmcdir, "{sample}", "kmc_k{K}", "kmc"),
+    log:
+        out = os.path.join(odir, "{sample}", "kmc_k{K}", "malva.log"),
+        time = os.path.join(odir, "{sample}", "kmc_k{K}", "malva.time")
+    shell:
+        """
+        /usr/bin/time -vo {log.time} {input.malvageno} -1 -v -u -k {params.k} -r {wildcards.K} -c {params.cs} -b 2 {input.fa} {input.vcf} {params.kmc_prefix} > {output.vcf} 2> {log.out}
+        """
+
+rule unzipvcf:
+    input: "{pre}catalog.vcf.gz"
+    output: "{pre}catalog.vcf"
+    shell: "gunzip -k {input}"
+
+rule zipvcf:
+    input:
+        "{fpre}.vcf"
+    output:
+        gz = "{fpre}.vcf.gza",
+    shell:
+        """
+        bgzip -c {input} > {output.gz}
+        touch --reference={input} {output.gz}
+        """
+
+rule tabixvcf:
+    input:
+        "{fpre}.vcf.gz"
+    output:
+        tbi = "{fpre}.vcf.gz.tbi"
+    shell:
+        """
+        tabix -p vcf {input}
+        """
+
+rule consensus:
+    input:
+        fa = ref,
+        vcf = os.path.join(odir, "{sample}", "kmc_k{K}", "malva.vcf")
+    output:
+        consensus = os.path.join(odir, "{sample}", "kmc_k{K}", "malva.consensus.fa"),
+    params:
+        malva_log = os.path.join(odir, "{sample}", "kmc_k{K}", "malva.log"),
+    log:
+        out = os.path.join(odir, "{sample}", "kmc_k{K}", "malva.consensus.log"),
+    run:
+        with open(params.malva_log, 'r') as l:
+            for last_line in l:
+                pass
+            if last_line is not None and last_line.startswith("[malva-geno/Execution completed]"):
+                shell("""
+                bgzip -c {input.vcf} > {input.vcf}.gz
+                tabix -p vcf {input.vcf}.gz
+                bcftools consensus -H 1 -f {input.fa} {input.vcf}.gz > {output.consensus} 2> {log.out}
+                """)
+            else:
+                shell("cp {input.fa} {output.consensus}")
+
+rule pangolin:
+    input:
+        consensus = os.path.join(odir, "{sample}", "kmc_k{K}", "malva.consensus.fa")
+    output:
+        lineage = os.path.join(odir, "{sample}", "kmc_k{K}", "malva.lineage.csv"),
+    shadow: "minimal"
+    priority: 50
+    log:
+        out = os.path.join(odir, "{sample}", "kmc_k{K}", "pangolin.log"),
+        time = os.path.join(odir, "{sample}", "kmc_k{K}", "pangolin.time")
+    shell:
+        """
+        /usr/bin/time -vo {log.time} pangolin --outfile {output.lineage} --threads {threads} {input.consensus} &> {log.out}
+        """
+
+### RUN OTHER TOOLS ###
+rule bwa_index:
+    input:
+        ref
+    output:
+        ref + ".bwt"
+    shell:
+        """
+        bwa index {input}
+        """
+
+rule align_sample:
+    input:
+        fa = ref,
+        index = ref + ".bwt",
+        sample = os.path.join(fqdir, "{sample}.fastq.gz")
+    output:
+        q30 = os.path.join(alndir, "{sample}", "{sample}.q30.bam")
+    params:
+        stype = lambda wildcards: samples[wildcards.sample][2],
+        sam = os.path.join(alndir, "{sample}", "{sample}.sam"),
+        bam = os.path.join(alndir, "{sample}", "{sample}.bam"),
+    threads: 4
+    log:
+        time = os.path.join(alndir, "{sample}", "minimap2.time")
+    shell:
+        """
+        if [ "{params.stype}" == "ILL" ] ; then /usr/bin/time -vo {log.time} bwa mem -t {threads} {input.fa} {input.sample} > {params.sam} ; else /usr/bin/time -vo {log.time} minimap2 -ax map-ont -t {threads} {input.fa} {input.sample} > {params.sam} ; fi
+        samtools view -bS -@ $(( {threads} - 1 )) {params.sam} | samtools sort -@ $(( {threads} - 1 )) > {params.bam}
+        samtools index {params.bam}
+        samtools view -@ $(( {threads} - 1 )) -q 30 -b {params.bam} > {output.q30}
+        samtools index {output.q30}
+        """
+
+rule run_bcftools:
+    input:
+        fa = ref,
+        bam = os.path.join(alndir, "{sample}", "{sample}.q30.bam")
+    output:
+        vcf = os.path.join(odir, "{sample}", "bcftools.vcf")
+    log:
+        time = os.path.join(odir, "{sample}", "bcftools.time")
+    shell:
+        """
+        /usr/bin/time -vo {log.time} bcftools mpileup -Ou -d 10000 -f {input.fa} {input.bam} | bcftools call --ploidy 1 -f GQ -mv -Ov > {output.vcf}
+        """
+
+rule run_lofreq:
+    input:
+        fa = ref,
+        bam = os.path.join(alndir, "{sample}", "{sample}.q30.bam")
+    output:
+        vcf = os.path.join(odir, "{sample}", "lofreq.vcf")
+    params:
+        stype = lambda wildcards: samples[wildcards.sample][2],
+        viterbi = os.path.join(odir, "{sample}", "{sample}.viterbi.bam")
+    threads: 4
+    log:
+        time = os.path.join(odir, "{sample}", "lofreq.time")
+    run:
+        if params.stype == "ILL":
+            shell('/usr/bin/time -vo {log.time} lofreq viterbi -f {input.fa} {input.bam} | samtools sort - > {params.viterbi} ; samtools index {params.viterbi}')
+            shell('/usr/bin/time -vao {log.time} lofreq call-parallel --pp-threads {threads} -f {input.fa} -o {output.vcf} {params.viterbi}')
+        else:
+            shell('/usr/bin/time -vo {log.time} lofreq call-parallel --pp-threads {threads} -f {input.fa} -o {output.vcf} {input.bam}')
+
+### CHECK VCF ###
+rule check_malva:
+    input:
+        vcf = varcatalog + ".gz",
+        truth_vcf = os.path.join(truthdir, "{sample}", "truth.vcf"),
+        malva_vcf = os.path.join(odir, "{sample}", "kmc_k{K}", "malva.vcf"),
+        check = os.path.join(swpath, "check.py"),
+    output:
+        res = os.path.join(odir, "{sample}", "kmc_k{K}", "malva.csv")
+    shell:
+        """
+        python3 {input.check} malva {input.vcf} {input.truth_vcf} {input.malva_vcf} > {output}
+        """
+
+rule check_bcftools:
+    input:
+        vcf = varcatalog,
+        truth_vcf = os.path.join(truthdir, "{sample}", "truth.vcf"),
+        bcftools_vcf = os.path.join(othdir, "{sample}.bcftools.vcf"),
+        check = os.path.join(swpath, "check.py"),
+    output:
+        res = os.path.join(odir, "{sample}", "bcftools.csv")
+    shell:
+        """
+        python3 {input.check} bcftools {input.vcf} {input.truth_vcf} {input.bcftools_vcf} > {output} 2> /dev/null
+        """
+
+rule check_lofreq:
+    input:
+        vcf = varcatalog,
+        truth_vcf = os.path.join(truthdir, "{sample}", "truth.vcf"),
+        lofreq_vcf = os.path.join(othdir, "{sample}.lofreq.vcf"),
+        check = os.path.join(swpath, "check.py"),
+    output:
+        res = os.path.join(odir, "{sample}", "lofreq.csv")
+    shell:
+        "python3 {input.check} lofreq {input.vcf} {input.truth_vcf} {input.lofreq_vcf} > {output} 2> /dev/null"
+
+rule pangolin_gisaid_seq:
+    input:
+        gisaid_seq = lambda wildcards: os.path.join(gisaiddir, samples[wildcards.sample][0] + ".fasta"),
+    output:
+        lineage = os.path.join(truthdir, "{sample}", "gisaid.lineage.csv")
+    shadow: "minimal"
+    log:
+        out = os.path.join(truthdir, "{sample}", "pangolin.log"),
+        time = os.path.join(truthdir, "{sample}", "pangolin.time")
+    shell:
+        """
+        /usr/bin/time -vo {log.time} pangolin --outfile {output.lineage} --threads {threads} {input.gisaid_seq} &> {log.out}
+        """
+
+rule summary:
+    input:
+        parse_check_csv = os.path.join(swpath, "parse-check-csv.py"),
+        parse_time_output = os.path.join(swpath, "parse-time-output.py"),
+        malva_csv = rules.check_malva.output.res,
+        malva_lineage_csv = rules.pangolin.output.lineage,
+        sample_lineage_csv = rules.pangolin_gisaid_seq.output.lineage,
+        bcftools_csv = rules.check_bcftools.output.res,
+        lofreq_csv = rules.check_lofreq.output.res,
+    params:
+        catalog = config["vcfname"],
+        malva_time = rules.malva.log.time,
+    output:
+        res = os.path.join(odir, "{sample}", "summary.k{K}.csv")
+    shell:
+        """
+        csvjoin -I \
+            <(echo -e "catalog,K,sample\n{params.catalog},{wildcards.K},{wildcards.sample}") \
+            <(sed '1s/,/,gisaid_/g' {input.sample_lineage_csv} | csvcut -c 2,3,4,5,6 -) \
+            <(python {input.parse_check_csv} malva_ < {input.malva_csv}) \
+            <(csvcut -c 2,3,4,5,6 {input.malva_lineage_csv}) \
+            <(python {input.parse_time_output} malva_ < {params.malva_time}) \
+            <(python {input.parse_check_csv} bcftools_ < {input.bcftools_csv}) \
+            <(python {input.parse_check_csv} lofreq_ < {input.lofreq_csv}) \
+            > {output.res}
+        """

@@ -1,0 +1,30 @@
+##fileformat=VCFv4.0
+##fileDate=20210410
+##source=lofreq call -f /home/denti/data/bmc_exp_from_scc/NC_045512.2.fa -o /home/denti/data/OUT/SRR13261896.lofreq.vcf /home/denti/data/OUT/SRR13261896.lofreq-viterbi.bam 
+##reference=/home/denti/data/bmc_exp_from_scc/NC_045512.2.fa
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw Depth">
+##INFO=<ID=AF,Number=1,Type=Float,Description="Allele Frequency">
+##INFO=<ID=SB,Number=1,Type=Integer,Description="Phred-scaled strand bias at this position">
+##INFO=<ID=DP4,Number=4,Type=Integer,Description="Counts for ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">
+##INFO=<ID=INDEL,Number=0,Type=Flag,Description="Indicates that the variant is an INDEL.">
+##INFO=<ID=CONSVAR,Number=0,Type=Flag,Description="Indicates that the variant is a consensus variant (as opposed to a low frequency variant).">
+##INFO=<ID=HRUN,Number=1,Type=Integer,Description="Homopolymer length to the right of report indel position">
+##FILTER=<ID=min_dp_10,Description="Minimum Coverage 10">
+##FILTER=<ID=sb_fdr,Description="Strand-Bias Multiple Testing Correction: fdr corr. pvalue > 0.001000">
+##FILTER=<ID=min_snvqual_61,Description="Minimum SNV Quality (Phred) 61">
+##FILTER=<ID=min_indelqual_20,Description="Minimum Indel Quality (Phred) 20">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+NC_045512.2	241	.	C	T	9155	PASS	DP=248;AF=1.000000;SB=0;DP4=0,0,124,124
+NC_045512.2	913	.	C	A	570	PASS	DP=442;AF=0.067873;SB=0;DP4=201,210,15,15
+NC_045512.2	1059	.	C	T	10594	PASS	DP=280;AF=1.000000;SB=0;DP4=0,0,147,133
+NC_045512.2	3037	.	C	T	4778	PASS	DP=124;AF=1.000000;SB=0;DP4=0,0,62,62
+NC_045512.2	8041	.	T	C	11703	PASS	DP=319;AF=1.000000;SB=0;DP4=0,0,182,137
+NC_045512.2	10323	.	A	G	13029	PASS	DP=351;AF=1.000000;SB=0;DP4=0,0,175,176
+NC_045512.2	12331	.	G	A	91	PASS	DP=342;AF=0.023392;SB=0;DP4=166,168,4,4
+NC_045512.2	13498	.	A	G	8410	PASS	DP=634;AF=0.465300;SB=0;DP4=169,170,145,150
+NC_045512.2	14408	.	C	T	17559	PASS	DP=471;AF=0.995754;SB=0;DP4=0,0,235,234
+NC_045512.2	22225	.	G	T	6124	PASS	DP=164;AF=0.993902;SB=3;DP4=1,0,77,86
+NC_045512.2	23403	.	A	G	13181	PASS	DP=370;AF=0.997297;SB=0;DP4=0,0,172,197
+NC_045512.2	25563	.	G	T	11246	PASS	DP=305;AF=1.000000;SB=0;DP4=0,0,145,160
+NC_045512.2	26461	.	C	G	9530	PASS	DP=264;AF=1.000000;SB=0;DP4=0,0,131,133
+NC_045512.2	28005	.	C	T	3891	PASS	DP=104;AF=1.000000;SB=0;DP4=0,0,52,52
