@@ -34,12 +34,15 @@ def check(with_gt = True):
             pos = record.pos
             if pos < 51 or pos > 29852:
                 continue
+            if pos not in callable:
+                continue
             if with_gt:
                 gt = record.samples[0]['GT'][0]
                 if gt > 0:
                     alt_called.add(pos)
             else:
-                alt_called.add(pos)
+                if record.qual > 1000:
+                    alt_called.add(pos)
     except:
         pass
     print("Truth", alt_real)
