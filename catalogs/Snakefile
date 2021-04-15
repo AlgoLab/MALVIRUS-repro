@@ -12,8 +12,8 @@ GISAID_DIR = f"{INPUT_DIR}/gisaid"
 pipelines = {
     "A05": "seqs/{dir}/msa/kl-ma_0.05/snp-sites/catalog.cleaned.vcf.gz",
     "B05": "seqs/{dir}/msa/nkl-ma_0.05/msa2vcf/catalog.norm.filt_maxlen.vcf.gz",
-    "A05b": "seqs/{dir}/msa/kl-ma_0.05/snp-sites/catalog.cleaned.bound.vcf.gz",
-    "B05b": "seqs/{dir}/msa/nkl-ma_0.05/msa2vcf/catalog.norm.filt_maxlen.bound.vcf.gz",
+#    "A05b": "seqs/{dir}/msa/kl-ma_0.05/snp-sites/catalog.cleaned.bound.vcf.gz",
+#    "B05b": "seqs/{dir}/msa/nkl-ma_0.05/msa2vcf/catalog.norm.filt_maxlen.bound.vcf.gz",
 }
 
 pipelines_free = {
@@ -38,7 +38,7 @@ rule all:
             "vcf/{curr_date}-SARS-CoV-2-{source}-pipeline_{pip}/catalog.vcf.gz",
             curr_date = [curr_date],
             source = ["NCBIVirusS-filters_100_100"],
-            pip = pipelines_free_bound.keys()
+            pip = pipelines_free.keys()
         ),
         expand(
             "vcf/{curr_date}-SARS-CoV-2-{source}-filters_{out}-pipeline_{pip}-filters_minsample_{minsample}/catalog.vcf.gz",
